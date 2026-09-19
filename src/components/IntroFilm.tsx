@@ -5,41 +5,58 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { films } from "@/data/site";
 import usePrefersReducedMotion from "@/components/usePrefersReducedMotion";
 
-const SESSION_KEY = "hope-trust-intro-seen";
+/** Slightly brisker than the master, which runs a touch long for an opening. */
+const PLAYBACK_RATE = 1.25;
 
 /** If the film has not started by now, let the visitor through to the site. */
-const START_TIMEOUT_MS = 2500;
+const START_TIMEOUT_MS = 3500;
 /** Hard ceiling so a stalled film can never hold the page hostage. */
-const MAX_VISIBLE_MS = (films.intro.duration + 3) * 1000;
+const MAX_VISIBLE_MS = (films.intro.duration / PLAYBACK_RATE + 3) * 1000;
 /** How long the static emblem is held when motion is reduced. */
 const REDUCED_MOTION_MS = 1500;
 const FADE_MS = 420;
 
 /**
- * Whether this browser session has already seen the film.
+ * Whether this page view should show the film.
  *
- * Captured once per page load and cached, so marking the session as seen later
- * cannot yank the layer away mid-playback.
+ * The boot script in `layout.tsx` decides this before first paint and records it
+ * on `<html data-intro>`. Read once and cached, so later changes to the
+ * attribute cannot pull the layer away mid-playback.
  */
 let seenAtLoad: boolean | null = null;
 
 function getSeenSnapshot(): boolean {
   if (seenAtLoad === null) {
-    try {
-      seenAtLoad = window.sessionStorage.getItem(SESSION_KEY) === "1";
-    } catch {
-      // Without sessionStorage the film shows once per page load rather than
-      // once per session. Still better than blocking the visitor.
-      seenAtLoad = false;
-    }
+    seenAtLoad = document.documentElement.dataset.intro === "seen";
   }
   return seenAtLoad;
 }
 
 /** The value never changes within a page load, so there is nothing to subscribe to. */
 const subscribeSeen = () => () => {};
-/** The static export renders no overlay; it appears after hydration if needed. */
-const getSeenServerSnapshot = () => true;
+/** The export ships the layer in its markup; CSS hides it for repeat views. */
+const getSeenServerSnapshot = () => false;
+
+/**
+ * Hydration renders one pass with the server snapshot ("not seen") before the
+ * store corrects it. Effects fire in that window, so they check the boot
+ * script's decision directly rather than trusting that pass.
+ */
+const introIsHidden = () => document.documentElement.dataset.intro === "seen";
+
+/**
+ * Picks the smallest source this device can actually play.
+ *
+ * The `media` attribute on `<source>` is ignored by every current browser for
+ * video, so the choice is made here instead. Phones get the 720p pair, which is
+ * what made the film fail to start on slower mobile connections before.
+ */
+function chooseSource(video: HTMLVideoElement): string {
+  const wide = window.matchMedia("(min-width: 1024px)").matches;
+  const webm = video.canPlayType('video/webm; codecs="vp9"') !== "";
+  if (wide) return webm ? films.intro.webm1080 : films.intro.mp41080;
+  return webm ? films.intro.webm720 : films.intro.mp4720;
+}
 
 /**
  * Full-screen welcome layer shown on the first page view of a browser session.
@@ -59,44 +76,39 @@ export default function IntroFilm() {
   const showFilm = visible && !reduced;
 
   const dismiss = useCallback(() => {
+    // Releases the scroll lock straight away; the layer fades over the page.
+    // "seen" is left alone — overwriting it would un-hide the layer on a repeat
+    // view and flash it over the page.
+    const root = document.documentElement;
+    if (root.dataset.intro !== "seen") root.dataset.intro = "done";
     setClosing(true);
     window.setTimeout(() => setDismissed(true), FADE_MS);
   }, []);
 
-  // Mark the session as seen. Cached above, so this cannot affect the current view.
+  // Take focus and listen for Esc while the layer is up. Scrolling is already
+  // locked by CSS from the first paint.
   useEffect(() => {
-    try {
-      window.sessionStorage.setItem(SESSION_KEY, "1");
-    } catch {
-      // Nothing to persist to.
-    }
-  }, []);
-
-  // Lock scrolling, take focus, and listen for Esc while the layer is up.
-  useEffect(() => {
-    if (!visible) return;
+    if (!visible || introIsHidden()) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") dismiss();
     };
-    document.body.style.overflow = "hidden";
     skipRef.current?.focus();
     window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKeyDown);
-    };
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [visible, dismiss]);
 
   // Reduced motion: hold the emblem briefly, then reveal the page.
   useEffect(() => {
-    if (!visible || !reduced) return;
+    if (!visible || !reduced || introIsHidden()) return;
     const timer = window.setTimeout(dismiss, REDUCED_MOTION_MS);
     return () => window.clearTimeout(timer);
   }, [visible, reduced, dismiss]);
 
-  // Playback guards.
+  // Load and play. The source is attached here rather than in markup so that
+  // reduced-motion visitors never fetch a film they will not see.
   useEffect(() => {
-    if (!showFilm) return;
+    // Nothing is fetched on a repeat view: the guard runs before any src is set.
+    if (!showFilm || introIsHidden()) return;
     const video = videoRef.current;
     if (!video) return;
 
@@ -105,6 +117,19 @@ export default function IntroFilm() {
       started = true;
     };
     video.addEventListener("playing", onPlaying);
+
+    // React can attach `muted` as a property too late for the autoplay check,
+    // which is what silently blocks playback on iOS. Set it before loading.
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playbackRate = PLAYBACK_RATE;
+    video.src = chooseSource(video);
+    video.load();
+
+    const onLoaded = () => {
+      video.playbackRate = PLAYBACK_RATE;
+    };
+    video.addEventListener("loadedmetadata", onLoaded);
     video.play().catch(() => dismiss());
 
     const startGuard = window.setTimeout(() => {
@@ -114,6 +139,7 @@ export default function IntroFilm() {
 
     return () => {
       video.removeEventListener("playing", onPlaying);
+      video.removeEventListener("loadedmetadata", onLoaded);
       window.clearTimeout(startGuard);
       window.clearTimeout(hardGuard);
     };
@@ -123,6 +149,7 @@ export default function IntroFilm() {
 
   return (
     <div
+      id="intro-film"
       role="dialog"
       aria-modal="true"
       aria-label="Hope Trust opening film"
@@ -131,23 +158,18 @@ export default function IntroFilm() {
       }`}
     >
       {showFilm ? (
+        // The poster fills the screen from the first paint, so the film is what
+        // the visitor sees while the video itself is still arriving.
         <video
           ref={videoRef}
           muted
           playsInline
-          autoPlay
-          preload="auto"
+          preload="none"
           poster={films.intro.poster}
           onEnded={dismiss}
           onError={dismiss}
           className="h-full w-full object-cover"
-        >
-          {/* Larger screens take the 1080p pair; everything else takes 720p. */}
-          <source src={films.intro.webm1080} type="video/webm" media="(min-width: 1024px)" />
-          <source src={films.intro.mp41080} type="video/mp4" media="(min-width: 1024px)" />
-          <source src={films.intro.webm720} type="video/webm" />
-          <source src={films.intro.mp4720} type="video/mp4" />
-        </video>
+        />
       ) : (
         <Image
           src="/assets/hope-trust-logo.png"

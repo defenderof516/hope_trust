@@ -9,6 +9,19 @@ import { rupeeFilm } from "@/data/content";
 import usePrefersReducedMotion from "@/components/usePrefersReducedMotion";
 
 /**
+ * Picks the smallest source this device can actually play.
+ *
+ * The `media` attribute on `<source>` is ignored by every current browser for
+ * video, so the choice is made here instead.
+ */
+function chooseSource(video: HTMLVideoElement): string {
+  const wide = window.matchMedia("(min-width: 1024px)").matches;
+  const webm = video.canPlayType('video/webm; codecs="vp9"') !== "";
+  if (wide) return webm ? films.rupee.webm1080 : films.rupee.mp41080;
+  return webm ? films.rupee.webm720 : films.rupee.mp4720;
+}
+
+/**
  * The "one rupee" education film.
  *
  * It plays once when it scrolls into view rather than looping, so it never
@@ -30,8 +43,15 @@ export default function RupeeFilm() {
       (entries) => {
         if (!entries[0]?.isIntersecting) return;
         observer.disconnect();
+        const video = videoRef.current;
+        if (!video) return;
         setPlayed(true);
-        videoRef.current?.play().catch(() => {
+        // `muted` must be set before the autoplay check or iOS blocks playback.
+        video.muted = true;
+        video.defaultMuted = true;
+        video.src = chooseSource(video);
+        video.load();
+        video.play().catch(() => {
           // Autoplay refused — the replay control is still available.
         });
       },
@@ -44,6 +64,11 @@ export default function RupeeFilm() {
   const replay = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
+    video.muted = true;
+    if (!video.src) {
+      video.src = chooseSource(video);
+      video.load();
+    }
     video.currentTime = 0;
     video.play().catch(() => {});
   }, []);
@@ -64,15 +89,10 @@ export default function RupeeFilm() {
                 ref={videoRef}
                 muted
                 playsInline
-                preload="metadata"
+                preload="none"
                 poster={films.rupee.poster}
                 className="h-full w-full object-cover"
-              >
-                <source src={films.rupee.webm1080} type="video/webm" media="(min-width: 1024px)" />
-                <source src={films.rupee.mp41080} type="video/mp4" media="(min-width: 1024px)" />
-                <source src={films.rupee.webm720} type="video/webm" />
-                <source src={films.rupee.mp4720} type="video/mp4" />
-              </video>
+              />
               <button
                 type="button"
                 onClick={replay}

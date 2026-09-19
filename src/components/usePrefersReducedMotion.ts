@@ -12,9 +12,10 @@ function subscribe(onChange: () => void) {
 
 const getSnapshot = () => window.matchMedia(QUERY).matches;
 
-// The server cannot know the preference, so assume reduced motion. Markup then
-// ships the still image rather than a video the visitor may not want.
-const getServerSnapshot = () => true;
+// The server cannot know the preference, so assume the common case: motion is
+// allowed. Markup then ships the video element, and a visitor who prefers
+// reduced motion swaps to the still at hydration before anything is fetched.
+const getServerSnapshot = () => false;
 
 /** Tracks the visitor's reduced-motion preference, including later changes to it. */
 export default function usePrefersReducedMotion() {

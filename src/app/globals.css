@@ -161,3 +161,17 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(14px);
 }
+
+/*
+ * Intro film, resolved before first paint by the boot script in layout.tsx.
+ * "show"  — first view of the session: the layer covers the page immediately.
+ * "seen"  — later views: the layer never appears, so there is no flash.
+ * "done"  — dismissed: scrolling is released while the layer fades out.
+ */
+html[data-intro="show"] body {
+  overflow: hidden;
+}
+
+html[data-intro="seen"] #intro-film {
+  display: none;
+}
