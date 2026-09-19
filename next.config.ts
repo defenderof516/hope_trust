@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         hostname: "pub-9aa82d64f38146e3b49ffa5560be01d2.r2.dev",
         pathname: "/gallery/**",
       },
+      {
+        protocol: "https",
+        hostname: "pub-9aa82d64f38146e3b49ffa5560be01d2.r2.dev",
+        pathname: "/video/**",
+      },
     ],
   },
 };

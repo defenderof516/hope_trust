@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+coverage/
+
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Source animation frame sequences are stored in Cloudflare R2.
+One rupee can light a student’s education/
+Tiruvannamalai mountain to Hope Trust logo/
+
+# Master film files are stored in Cloudflare R2, not in git.
+mountain.mp4
+1 rupee.mp4

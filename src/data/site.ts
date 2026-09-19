@@ -100,6 +100,37 @@ export const programs: Program[] = [
   },
 ];
 
+export interface Film {
+  /** Ordered widest-first; the browser picks the first source it can play. */
+  webm1080: string;
+  mp41080: string;
+  webm720: string;
+  mp4720: string;
+  /** First frame — shown instantly while the film loads. */
+  poster: string;
+  /** Final frame — static fallback for reduced motion or no video. */
+  still: string;
+  /** Seconds, for timing guards. */
+  duration: number;
+}
+
+const film = (name: string, duration: number): Film => ({
+  webm1080: `${trust.r2Base}/video/${name}-1080.webm`,
+  mp41080: `${trust.r2Base}/video/${name}-1080.mp4`,
+  webm720: `${trust.r2Base}/video/${name}-720.webm`,
+  mp4720: `${trust.r2Base}/video/${name}-720.mp4`,
+  poster: `${trust.r2Base}/video/${name}-poster.jpg`,
+  still: `${trust.r2Base}/video/${name}-still.jpg`,
+  duration,
+});
+
+export const films = {
+  /** Tiruvannamalai mountain resolving into the Hope Trust emblem. */
+  intro: film("mountain-intro", 8),
+  /** One rupee becoming the light of a study lamp. */
+  rupee: film("rupee-light", 6),
+} as const;
+
 export const registrations = [
   { label: "Public Charitable Trust", value: "Reg. No. 20/2017" },
   { label: "NGO Darpan", value: "TN/2020/0249897" },

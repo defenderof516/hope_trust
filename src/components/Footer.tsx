@@ -3,6 +3,14 @@ import Link from "next/link";
 import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 import { trust } from "@/data/site";
 
+const explore = [
+  { label: "About us", href: "/about" },
+  { label: "Our work", href: "/work" },
+  { label: "Field gallery", href: "/gallery" },
+  { label: "Donate", href: "/donate" },
+  { label: "Contact", href: "/contact" },
+];
+
 export default function Footer() {
   return (
     <footer className="relative overflow-hidden bg-ink text-white">
@@ -26,14 +34,9 @@ export default function Footer() {
         <div>
           <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-lime">Explore</p>
           <div className="mt-5 grid gap-2">
-            {[
-              ["About us", "/about"],
-              ["Our work", "/work"],
-              ["Field gallery", "/gallery"],
-              ["Contact", "/contact"],
-            ].map(([label, href]) => (
-              <Link key={href} href={href} className="focus-ring group flex w-fit items-center gap-2 rounded text-white/75 transition hover:text-white">
-                {label}
+            {explore.map((item) => (
+              <Link key={item.href} href={item.href} className="focus-ring group flex w-fit items-center gap-2 rounded text-white/75 transition hover:text-white">
+                {item.label}
                 <ArrowUpRight size={14} className="transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </Link>
             ))}

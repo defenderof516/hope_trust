@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Heart, Menu, X } from "lucide-react";
+import { useState } from "react";
 
 const links = [
   { href: "/", label: "Home" },
@@ -17,8 +17,14 @@ const links = [
 export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [menuPath, setMenuPath] = useState(pathname);
 
-  useEffect(() => setOpen(false), [pathname]);
+  // Navigating away closes the mobile menu. Adjusting state during render keeps
+  // the closed menu in the same commit as the new route, with no extra pass.
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
+    setOpen(false);
+  }
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6">
@@ -50,7 +56,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`focus-ring rounded-full px-4 py-2 text-sm font-bold transition ${
+                className={`focus-ring rounded-full px-3.5 py-2 text-sm font-bold transition ${
                   active ? "bg-ink text-white" : "text-ink-soft hover:bg-mist hover:text-cyan-dark"
                 }`}
               >
@@ -58,11 +64,19 @@ export default function Navbar() {
               </Link>
             );
           })}
+
           <Link
             href="/contact"
-            className="focus-ring ml-2 rounded-full bg-magenta px-5 py-2.5 text-sm font-extrabold text-white shadow-[0_8px_24px_rgba(168,7,102,0.24)] transition hover:-translate-y-0.5 hover:bg-ink"
+            className="focus-ring ml-2 hidden rounded-full border border-ink/15 px-4 py-2 text-sm font-bold text-ink transition hover:border-ink hover:bg-mist xl:inline-flex"
           >
             Partner with us
+          </Link>
+          <Link
+            href="/donate"
+            className="focus-ring ml-1.5 inline-flex items-center gap-2 rounded-full bg-magenta px-5 py-2.5 text-sm font-extrabold text-white shadow-[0_8px_24px_rgba(168,7,102,0.24)] transition hover:-translate-y-0.5 hover:bg-ink"
+          >
+            <Heart size={15} />
+            Donate
           </Link>
         </nav>
 
@@ -91,6 +105,20 @@ export default function Navbar() {
               <span aria-hidden="true">↗</span>
             </Link>
           ))}
+          <Link
+            href="/contact"
+            className="focus-ring mt-1 flex items-center justify-between rounded-xl border border-ink/12 px-4 py-3.5 text-base font-bold text-ink hover:bg-mist"
+          >
+            Partner with us
+            <span aria-hidden="true">↗</span>
+          </Link>
+          <Link
+            href="/donate"
+            className="focus-ring mt-2 flex items-center justify-center gap-2 rounded-xl bg-magenta px-4 py-3.5 text-base font-extrabold text-white"
+          >
+            <Heart size={17} />
+            Donate
+          </Link>
         </nav>
       )}
     </header>

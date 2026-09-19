@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, MapPin, Sparkles } from "lucide-react";
+import EducationPriority from "@/components/EducationPriority";
+import RupeeFilm from "@/components/RupeeFilm";
+import { mission } from "@/data/content";
 import { galleryImages, programs, registrations } from "@/data/site";
 
 const accentClasses = {
@@ -24,15 +27,15 @@ export default function Home() {
               Hope is a <span className="text-lime italic">public</span> act.
             </h1>
             <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/72 sm:text-xl">
-              We work alongside rural communities to strengthen health, learning, livelihoods, women-led enterprise and the environment.
+              {mission}
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link href="/work" className="focus-ring group inline-flex items-center justify-center gap-3 rounded-full bg-cyan px-7 py-4 font-extrabold text-ink transition hover:-translate-y-1 hover:bg-white">
-                Explore our work
+              <Link href="/donate" className="focus-ring group inline-flex items-center justify-center gap-3 rounded-full bg-cyan px-7 py-4 font-extrabold text-ink transition hover:-translate-y-1 hover:bg-white">
+                Support education
                 <ArrowRight size={19} className="transition group-hover:translate-x-1" />
               </Link>
-              <Link href="/gallery" className="focus-ring inline-flex items-center justify-center rounded-full border border-white/25 px-7 py-4 font-extrabold text-white transition hover:border-white hover:bg-white/10">
-                See the field gallery
+              <Link href="/work" className="focus-ring inline-flex items-center justify-center rounded-full border border-white/25 px-7 py-4 font-extrabold text-white transition hover:border-white hover:bg-white/10">
+                Explore our work
               </Link>
             </div>
           </div>
@@ -87,6 +90,10 @@ export default function Home() {
           )))}
         </div>
       </div>
+
+      <EducationPriority />
+
+      <RupeeFilm />
 
       <section className="py-20 sm:py-28">
         <div className="site-shell">
@@ -168,9 +175,14 @@ export default function Home() {
           <div className="absolute right-0 top-0 size-64 translate-x-1/3 -translate-y-1/3 rounded-full border-[30px] border-white/10" />
           <p className="eyebrow text-lime">Work with us</p>
           <h2 className="mt-5 max-w-4xl text-5xl font-bold leading-[0.98] sm:text-7xl">Local action grows through trusted partnerships.</h2>
-          <Link href="/contact" className="focus-ring mt-9 inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 font-extrabold text-magenta transition hover:bg-lime hover:text-ink">
-            Start a conversation <ArrowRight size={18} />
-          </Link>
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <Link href="/donate" className="focus-ring inline-flex items-center justify-center gap-3 rounded-full bg-white px-7 py-4 font-extrabold text-magenta transition hover:bg-lime hover:text-ink">
+              Support a student <ArrowRight size={18} />
+            </Link>
+            <Link href="/contact" className="focus-ring inline-flex items-center justify-center rounded-full border border-white/35 px-7 py-4 font-extrabold text-white transition hover:border-white hover:bg-white/10">
+              Partner with Hope Trust
+            </Link>
+          </div>
         </div>
       </section>
     </>
