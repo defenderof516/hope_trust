@@ -131,6 +131,23 @@ export const films = {
   rupee: film("rupee-light", 6),
 } as const;
 
+/**
+ * Hope Trust's donation account, transcribed from the trustee-supplied record.
+ *
+ * Internally consistent: the branch code is the first four digits of the account
+ * number, and the IFSC carries Bank of Baroda's "BARB" prefix with the RBI's
+ * mandatory zero as its fifth character.
+ */
+export const bankAccount = {
+  bank: "Bank of Baroda",
+  branch: "Tiruvannamalai",
+  address: "RR Complex, 15 Polur Road, Tiruvannamalai, Tamil Nadu 606 601",
+  accountName: "Hope Trust",
+  accountNumber: "36790200000485",
+  ifsc: "BARB0TIRUVN",
+  branchCode: "3679",
+} as const;
+
 export const registrations = [
   { label: "Public Charitable Trust", value: "Reg. No. 20/2017" },
   { label: "NGO Darpan", value: "TN/2020/0249897" },

@@ -42,11 +42,14 @@ export const quotes = [
 export const donate = {
   heading: "Your support can keep a learning journey moving.",
   lede: "Hope Trust is a registered public charitable trust in Tiruvannamalai, working alongside students and families across the district.",
-  notice:
-    "Donation details will be added here shortly. For partnership or donation enquiries, please contact Hope Trust directly.",
+  transferNote:
+    "Contributions can be made by bank transfer to the trust’s account below. Please use your own name as the payment reference so the trust can identify and acknowledge your contribution.",
+  receiptHeading: "Donation receipts",
+  receiptNote:
+    "After transferring, send your transaction reference, name and postal address to the trust and a receipt will be issued. Hope Trust is registered under Section 80G; please confirm the current tax treatment of your contribution with your own adviser.",
   enquiry: "Talk to Hope Trust",
   registrationNote:
-    "These are the trust’s registration records. Guidance on donation receipts and any applicable tax treatment will be published here alongside verified payment details.",
+    "These are the trust’s registration records, held under its founding deed as a public charitable trust.",
 };
 
 /**
